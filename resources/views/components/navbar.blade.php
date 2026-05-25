@@ -121,81 +121,49 @@
 </a>
 
             @auth
+    <div class="gv-user-menu">
+        <button id="user-dd-btn" class="gv-user-btn">
+            <span class="gv-user-avatar">
+                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+            </span>
+            <span>{{ Str::limit(auth()->user()->name, 10) }}</span>
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2.5">
+                <path d="m6 9 6 6 6-6"/>
+            </svg>
+        </button>
+        <div id="user-dropdown" class="gv-dropdown">
 
-                <div class="gv-user-menu">
+            {{-- Solo admin --}}
+            @role('admin')
+            <a href="{{ route('admin.dashboard') }}">
+                ⚡ Panel admin
+            </a>
+            <a href="{{ route('admin.productos.create') }}">
+                ➕ Nuevo producto
+            </a>
+            <div class="gv-dropdown-divider"></div>
+            @endrole
 
-                    <button id="user-dd-btn" class="gv-user-btn">
+            {{-- Todos los auth --}}
+            <a href="{{ route('perfil') }}">👤 Mi perfil</a>
+            <a href="{{ route('pedidos.index') }}">📦 Mis pedidos</a>
 
-                        <span class="gv-user-avatar">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                        </span>
+            @role('mayorista|cliente')
+            <a href="{{ url('/fidelizacion') }}">⭐ Mis puntos</a>
+            @endrole
 
-                        <span>
-                            {{ Str::limit(auth()->user()->name, 10) }}
-                        </span>
-
-                        <svg
-                            width="12"
-                            height="12"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                        >
-                            <path d="m6 9 6 6 6-6"/>
-                        </svg>
-
-                    </button>
-
-                    <div id="user-dropdown" class="gv-dropdown">
-
-                        <a href="{{ url('/perfil') }}">
-                            👤 Mi perfil
-                        </a>
-
-                        <a href="{{ url('/pedidos') }}">
-                            📦 Mis pedidos
-                        </a>
-
-                        <a href="#">
-                            ⭐ Favoritos
-                        </a>
-
-                        <div class="gv-dropdown-divider"></div>
-
-                        <form method="POST" action="{{ url('/logout') }}">
-
-                            @csrf
-
-                            <button type="submit">
-                                🚪 Cerrar sesión
-                            </button>
-
-                        </form>
-
-                    </div>
-
-                </div>
-
-            @else
-
-                <a href="{{ url('/login') }}" class="btn-outline-light">
-                    Ingresar
-                </a>
-
-                <a href="{{ url('/register') }}" class="btn-navy">
-                    Registrarse
-                </a>
-                
-                {{-- Solo visible si eres admin (por ahora sin auth) --}}
-<li>
-    <a href="{{ url('/admin/productos/crear') }}"
-       style="color:#facc15 !important;">
-        + Producto
-    </a>
-</li>
-
-            @endauth
+            <div class="gv-dropdown-divider"></div>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit">🚪 Cerrar sesión</button>
+            </form>
+        </div>
+    </div>
+@else
+    <a href="{{ route('login') }}" class="btn-outline-light">Ingresar</a>
+    <a href="{{ route('register') }}" class="btn-navy">Registrarse</a>
+@endauth
 
         </div>
 
