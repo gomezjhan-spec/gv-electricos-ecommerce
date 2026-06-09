@@ -40,6 +40,7 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        return redirect('/');
+        return redirect('/productos')
+            ->with('success', '🎉 ¡Bienvenido a GV Eléctricos! Tu cuenta fue creada exitosamente.');
     }
 }

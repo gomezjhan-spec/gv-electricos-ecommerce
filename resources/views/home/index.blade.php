@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title','Inicio')
+@section('title','GV Eléctricos y Acabados — Jamundí, Valle del Cauca')
 @section('content')
 
 {{-- HERO --}}
@@ -33,7 +33,7 @@
                         <path d="m9 18 6-6-6-6"/>
                     </svg>
                 </a>
-                <a href="{{ url('/mayoreo') }}" class="btn-outline-light">
+                <a href="{{ url('/productos?disponible_mayoreo=1') }}" class="btn-outline-light">
                     Precios mayoreo
                 </a>
             </div>
@@ -79,7 +79,8 @@
                 <path d="m21 21-4.35-4.35"/>
             </svg>
             <input type="text" name="q"
-                   placeholder="¿Qué estás buscando? — lámparas, cables, pinturas...">
+                   placeholder="¿Qué estás buscando? — lámparas, cables, pinturas..."
+                   autocomplete="off">
         </form>
     </div>
 </div>
@@ -92,19 +93,19 @@
             <h2 class="section-title-dark">¿Qué necesitas hoy?</h2>
         </div>
         <div class="gv-cats">
-            @foreach([
-                ['💡','Iluminación',  'iluminacion'],
-                ['🔌','Tomas',        'tomas'],
-                ['🔶','Cables',       'cables'],
-                ['🏠','Obra blanca',  'obra-blanca'],
-                ['🎨','Pinturas',     'pinturas'],
-                ['🔧','Herramientas', 'herramientas'],
-            ] as $i => [$icon,$name,$slug])
+            @foreach(App\Models\Producto::categorias() as $i => [$slug => $info])
+            @endforeach
+            @php
+                $cats = App\Models\Producto::categorias();
+                $i = 0;
+            @endphp
+            @foreach($cats as $slug => $info)
             <a href="{{ url('/productos?categoria='.$slug) }}"
-               class="gv-cat-card reveal reveal-delay-{{ $i+1 }}">
-                <div class="gv-cat-icon">{{ $icon }}</div>
-                <span class="gv-cat-name">{{ $name }}</span>
+               class="gv-cat-card reveal reveal-delay-{{ ($i % 4) + 1 }}">
+                <div class="gv-cat-icon">{{ $info['icon'] }}</div>
+                <span class="gv-cat-name">{{ $info['label'] }}</span>
             </a>
+            @php $i++ @endphp
             @endforeach
         </div>
     </div>
@@ -133,7 +134,7 @@
     </div>
 </div>
 
-{{-- PRODUCTOS DESTACADOS --}}
+{{-- PRODUCTOS DESTACADOS DESDE LA BD --}}
 <div class="gv-section-dark">
     <div class="gv-wrap">
         <div class="gv-products-header reveal">
@@ -149,40 +150,67 @@
                 </svg>
             </a>
         </div>
+
+        @if($destacados->isEmpty())
+        <div class="cat-empty" style="padding:40px 20px;">
+            <div class="cat-empty-icon">📦</div>
+            <h3>Cargando catálogo</h3>
+            <p>Pronto tendremos productos disponibles para ti.</p>
+        </div>
+        @else
         <div class="gv-products-grid">
-            @foreach([
-                ['💡','Bombillo LED 9W E27',      'GV-BL-009', '$4.800',  'gv-bg-blue',  'OFERTA', 'gv-badge-yellow', true],
-                ['🔦','Panel LED 18W Embutir',    'GV-LP-018', '$32.000', 'gv-bg-amber', 'NUEVO',  'gv-badge-navy',   true],
-                ['🕯️','Lámpara Colgante Moderna', 'GV-LC-001', '$89.000', 'gv-bg-green',  null,     null,              true],
-                ['⚡','Cable THHN 12 AWG x100m',  'GV-CA-012', '$145.000','gv-bg-red',   'TOP',    'gv-badge-navy',   false],
-            ] as $i => [$icon,$name,$ref,$price,$bg,$badge,$badgeClass,$mayoreo])
-            <div class="gv-product-card reveal reveal-delay-{{ $i+1 }}">
-                <div class="gv-product-img {{ $bg }}">
-                    {{ $icon }}
-                    @if($badge)
-                    <span class="gv-badge {{ $badgeClass }}">{{ $badge }}</span>
+            @php $bgs = ['gv-bg-blue','gv-bg-amber','gv-bg-green','gv-bg-red']; @endphp
+            @foreach($destacados as $i => $producto)
+            <div class="gv-product-card reveal reveal-delay-{{ ($i % 4) + 1 }}">
+
+                <div class="gv-product-img {{ $bgs[$i % 4] }}">
+                    @if($producto->imagen_url)
+                        <img src="{{ $producto->imagen_url }}"
+                             alt="{{ $producto->nombre }}"
+                             class="cat-product-real-img">
+                    @else
+                        <span style="font-size:52px;">
+                            {{ App\Models\Producto::categorias()[$producto->categoria]['icon'] ?? '📦' }}
+                        </span>
+                    @endif
+
+                    @if($producto->badge)
+                    <span class="gv-badge {{ $producto->badge === 'OFERTA' ? 'gv-badge-yellow' : 'gv-badge-navy' }}">
+                        {{ $producto->badge }}
+                    </span>
                     @endif
                 </div>
+
                 <div class="gv-product-info">
                     <div class="gv-product-tags">
-                        <span class="gv-tag {{ $mayoreo ? 'gv-tag-mayoreo' : 'gv-tag-detal' }}">
-                            {{ $mayoreo ? 'Mayoreo' : 'Detal' }}
+                        <span class="gv-tag {{ $producto->disponible_mayoreo ? 'gv-tag-mayoreo' : 'gv-tag-detal' }}">
+                            {{ $producto->disponible_mayoreo ? 'Mayoreo' : 'Detal' }}
                         </span>
                     </div>
-                    <p class="gv-product-name">{{ $name }}</p>
-                    <p class="gv-product-ref">Ref. {{ $ref }}</p>
+                    <p class="gv-product-name">{{ $producto->nombre }}</p>
+                    <p class="gv-product-ref">Ref. {{ $producto->referencia }}</p>
                     <div class="gv-product-footer">
                         <div class="gv-product-price">
-                            <p class="price">{{ $price }}</p>
+                            <p class="price">{{ $producto->precio_formateado }}</p>
                             <p class="per">/ unidad</p>
                         </div>
-                        <button class="gv-add-btn"
-                                onclick="gvToast('✅ {{ $name }} agregado al carrito')">+</button>
+                        <a href="{{ route('productos.show', $producto) }}"
+                           class="gv-add-btn"
+                           title="Ver producto"
+                           style="text-decoration:none;font-size:16px;">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                 stroke-width="2.5" style="width:16px;height:16px">
+                                <path d="m9 18 6-6-6-6"/>
+                            </svg>
+                        </a>
                     </div>
                 </div>
+
             </div>
             @endforeach
         </div>
+        @endif
+
     </div>
 </div>
 
@@ -207,9 +235,15 @@
                     </div>
                 </div>
                 <div class="gv-promo-action">
+                    @auth
+                    <a href="{{ url('/pedidos') }}" class="btn-yellow">
+                        Mis pedidos ⚡
+                    </a>
+                    @else
                     <a href="{{ url('/register') }}" class="btn-yellow">
                         Registrarme gratis ⚡
                     </a>
+                    @endauth
                 </div>
             </div>
         </div>

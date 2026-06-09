@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', isset($producto) && $producto ? 'Editar producto' : 'Nuevo producto')
+@section('title', isset($producto) && $producto ? 'Editar: '.$producto->nombre : 'Nuevo producto')
 @section('content')
 
 <div class="gv-section-dark">
@@ -7,19 +7,19 @@
 
         {{-- Header --}}
         <div style="margin-bottom:40px;">
-            <a href="{{ route('productos.index') }}"
+            <a href="{{ route('admin.productos.index') }}"
                style="display:inline-flex;align-items:center;gap:6px;
                       font-size:13px;font-weight:600;color:#475569;
                       text-decoration:none;margin-bottom:20px;
                       transition:color .2s;"
                onmouseover="this.style.color='white'"
                onmouseout="this.style.color='#475569'">
-                ← Volver al catálogo
+                ← Volver al listado
             </a>
             <span class="section-label-dark">
                 {{ isset($producto) && $producto ? 'Editar' : 'Nuevo' }} producto
             </span>
-            <h1 class="section-title-dark">
+            <h1 class="section-title-dark" style="margin-top:6px;">
                 {{ isset($producto) && $producto ? $producto->nombre : 'Agregar producto' }}
             </h1>
         </div>
@@ -74,7 +74,7 @@
                     </div>
                 </div>
 
-                <div class="gv-form-group">
+                <div class="gv-form-group" style="margin-bottom:20px;">
                     <label class="gv-label">Descripción</label>
                     <textarea name="descripcion" class="gv-input gv-textarea"
                               placeholder="Describe el producto, especificaciones técnicas, usos...">{{ old('descripcion', $producto->descripcion ?? '') }}</textarea>
@@ -108,7 +108,7 @@
                 </div>
             </div>
 
-            {{-- SECCIÓN: Precios --}}
+            {{-- SECCIÓN: Precios y stock --}}
             <div class="gv-form-card">
                 <h3 class="gv-form-section-title">💰 Precios y stock</h3>
 
@@ -117,7 +117,8 @@
                         <label class="gv-label">Precio detal (COP) *</label>
                         <div class="gv-input-prefix-wrap">
                             <span class="gv-input-prefix">$</span>
-                            <input type="number" name="precio_detal" class="gv-input gv-input-prefixed"
+                            <input type="number" name="precio_detal"
+                                   class="gv-input gv-input-prefixed"
                                    value="{{ old('precio_detal', $producto->precio_detal ?? '') }}"
                                    placeholder="4800" min="0" step="100" required>
                         </div>
@@ -126,7 +127,8 @@
                         <label class="gv-label">Precio mayoreo (COP)</label>
                         <div class="gv-input-prefix-wrap">
                             <span class="gv-input-prefix">$</span>
-                            <input type="number" name="precio_mayoreo" class="gv-input gv-input-prefixed"
+                            <input type="number" name="precio_mayoreo"
+                                   class="gv-input gv-input-prefixed"
                                    value="{{ old('precio_mayoreo', $producto->precio_mayoreo ?? '') }}"
                                    placeholder="3800" min="0" step="100">
                         </div>
@@ -146,7 +148,8 @@
                                value="{{ old('stock', $producto->stock ?? 0) }}"
                                placeholder="0" min="0" required>
                     </div>
-                    <div class="gv-form-group" style="display:flex;flex-direction:column;gap:12px;justify-content:flex-end;">
+                    <div class="gv-form-group"
+                         style="display:flex;flex-direction:column;gap:14px;justify-content:flex-end;">
                         <label class="gv-toggle">
                             <input type="checkbox" name="disponible_mayoreo" value="1"
                                    {{ old('disponible_mayoreo', $producto->disponible_mayoreo ?? true) ? 'checked' : '' }}>
@@ -167,7 +170,6 @@
             <div class="gv-form-card">
                 <h3 class="gv-form-section-title">🖼️ Imagen del producto</h3>
 
-                {{-- Preview imagen actual --}}
                 @if(isset($producto) && $producto && $producto->imagen_url)
                 <div style="margin-bottom:20px;">
                     <p class="gv-label" style="margin-bottom:10px;">Imagen actual:</p>
@@ -177,15 +179,18 @@
                              alt="{{ $producto->nombre }}"
                              style="width:100%;height:100%;object-fit:cover;">
                     </div>
+                    <p style="font-size:12px;color:#475569;margin-top:8px;">
+                        Sube una nueva imagen para reemplazarla.
+                    </p>
                 </div>
                 @endif
 
-                {{-- Upload --}}
                 <div class="gv-file-upload" id="file-upload-area">
                     <input type="file" name="imagen" id="imagen-input"
                            accept="image/jpg,image/jpeg,image/png,image/webp"
                            style="display:none;">
-                    <div id="upload-placeholder" onclick="document.getElementById('imagen-input').click()"
+                    <div id="upload-placeholder"
+                         onclick="document.getElementById('imagen-input').click()"
                          style="cursor:pointer;">
                         <div style="font-size:40px;margin-bottom:12px;">📷</div>
                         <p style="font-size:14px;font-weight:700;color:white;margin-bottom:6px;">
@@ -199,7 +204,8 @@
                         </div>
                     </div>
                     <div id="upload-preview" style="display:none;text-align:center;">
-                        <img id="preview-img" style="max-height:200px;border-radius:12px;margin-bottom:12px;">
+                        <img id="preview-img"
+                             style="max-height:200px;border-radius:12px;margin-bottom:12px;">
                         <p id="preview-name" style="font-size:13px;color:#94a3b8;"></p>
                         <button type="button" onclick="clearPreview()"
                                 style="margin-top:8px;background:rgba(239,68,68,.1);
@@ -214,7 +220,7 @@
 
             {{-- Botones --}}
             <div style="display:flex;gap:12px;justify-content:flex-end;padding-top:8px;">
-                <a href="{{ route('productos.index') }}" class="btn-outline-light">
+                <a href="{{ route('admin.productos.index') }}" class="btn-outline-light">
                     Cancelar
                 </a>
                 <button type="submit" class="btn-primary">
@@ -228,14 +234,14 @@
 
 @push('scripts')
 <script>
-// Preview imagen
+// Preview de imagen seleccionada
 document.getElementById('imagen-input').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(ev) {
         document.getElementById('preview-img').src = ev.target.result;
-        document.getElementById('preview-name').textContent = file.name;
+        document.getElementById('preview-name').textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
         document.getElementById('upload-placeholder').style.display = 'none';
         document.getElementById('upload-preview').style.display = 'block';
     };
@@ -250,11 +256,19 @@ function clearPreview() {
 
 // Drag & drop
 const area = document.getElementById('file-upload-area');
-area.addEventListener('dragover', e => { e.preventDefault(); area.style.borderColor = 'rgba(37,99,235,.6)'; });
-area.addEventListener('dragleave', () => { area.style.borderColor = 'rgba(255,255,255,.08)'; });
+area.addEventListener('dragover', e => {
+    e.preventDefault();
+    area.style.borderColor = 'rgba(37,99,235,.6)';
+    area.style.background  = 'rgba(37,99,235,.04)';
+});
+area.addEventListener('dragleave', () => {
+    area.style.borderColor = 'rgba(255,255,255,.08)';
+    area.style.background  = '';
+});
 area.addEventListener('drop', e => {
     e.preventDefault();
     area.style.borderColor = 'rgba(255,255,255,.08)';
+    area.style.background  = '';
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
         const input = document.getElementById('imagen-input');

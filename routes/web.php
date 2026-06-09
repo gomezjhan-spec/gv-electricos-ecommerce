@@ -14,7 +14,6 @@ Route::get('/productos', [ProductoController::class, 'index'])
 Route::get('/productos/{producto}', [ProductoController::class, 'show'])
     ->name('productos.show');
 
-// ── Esta línea conecta auth.php ────────────────
 require __DIR__.'/auth.php';
 
 Route::middleware('auth')->group(function () {

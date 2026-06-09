@@ -9,33 +9,43 @@ use Illuminate\Support\Facades\Storage;
 class ProductoController extends Controller
 {
     public function index(Request $request)
-    {
-        $categorias      = Producto::categorias();
-        $categoriaActual = $request->get('categoria', '');
-        $busqueda        = $request->get('q', '');
+{
+    $categorias      = Producto::categorias();
+    $categoriaActual = $request->get('categoria', '');
+    $busqueda        = $request->get('q', '');
+    $soloMayoreo     = $request->boolean('disponible_mayoreo');
+    $badge           = $request->get('badge', '');
 
-        $query = Producto::where('activo', true);
+    $query = Producto::where('activo', true);
 
-        if ($categoriaActual && array_key_exists($categoriaActual, $categorias)) {
-            $query->where('categoria', $categoriaActual);
-        }
-
-        if ($busqueda) {
-            $query->where(function ($q) use ($busqueda) {
-                $q->where('nombre', 'like', "%$busqueda%")
-                  ->orWhere('referencia', 'like', "%$busqueda%")
-                  ->orWhere('descripcion', 'like', "%$busqueda%");
-            });
-        }
-
-        $productos = $query->orderByDesc('destacado')
-                           ->orderByDesc('created_at')
-                           ->paginate(12);
-
-        return view('productos.index', compact(
-            'productos', 'categorias', 'categoriaActual', 'busqueda'
-        ));
+    if ($categoriaActual && array_key_exists($categoriaActual, $categorias)) {
+        $query->where('categoria', $categoriaActual);
     }
+
+    if ($busqueda) {
+        $query->where(function ($q) use ($busqueda) {
+            $q->where('nombre', 'like', "%$busqueda%")
+              ->orWhere('referencia', 'like', "%$busqueda%")
+              ->orWhere('descripcion', 'like', "%$busqueda%");
+        });
+    }
+
+    if ($soloMayoreo) {
+        $query->where('disponible_mayoreo', true);
+    }
+
+    if ($badge) {
+        $query->where('badge', strtoupper($badge));
+    }
+
+    $productos = $query->orderByDesc('destacado')
+                       ->orderByDesc('created_at')
+                       ->paginate(12);
+
+    return view('productos.index', compact(
+        'productos', 'categorias', 'categoriaActual', 'busqueda', 'soloMayoreo', 'badge'
+    ));
+}
 
     public function show(Producto $producto)
     {
@@ -90,7 +100,8 @@ class ProductoController extends Controller
 
         Producto::create($data);
 
-        return redirect()->route('productos.index')
+        // ✅ CORREGIDO: redirigir al panel admin, no al catálogo público
+        return redirect()->route('admin.productos.index')
                          ->with('success', '✅ Producto creado correctamente.');
     }
 
@@ -130,7 +141,8 @@ class ProductoController extends Controller
 
         $producto->update($data);
 
-        return redirect()->route('productos.index')
+        // ✅ CORREGIDO: redirigir al panel admin
+        return redirect()->route('admin.productos.index')
                          ->with('success', '✅ Producto actualizado.');
     }
 
