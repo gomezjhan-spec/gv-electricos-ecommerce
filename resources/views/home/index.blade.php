@@ -92,20 +92,20 @@
             <span class="section-label-dark">Explorar</span>
             <h2 class="section-title-dark">¿Qué necesitas hoy?</h2>
         </div>
+
         <div class="gv-cats">
-            @foreach(App\Models\Producto::categorias() as $i => [$slug => $info])
-            @endforeach
             @php
                 $cats = App\Models\Producto::categorias();
                 $i = 0;
             @endphp
+
             @foreach($cats as $slug => $info)
-            <a href="{{ url('/productos?categoria='.$slug) }}"
-               class="gv-cat-card reveal reveal-delay-{{ ($i % 4) + 1 }}">
-                <div class="gv-cat-icon">{{ $info['icon'] }}</div>
-                <span class="gv-cat-name">{{ $info['label'] }}</span>
-            </a>
-            @php $i++ @endphp
+                <a href="{{ url('/productos?categoria='.$slug) }}"
+                   class="gv-cat-card reveal reveal-delay-{{ ($i % 4) + 1 }}">
+                    <div class="gv-cat-icon">{{ $info['icon'] }}</div>
+                    <span class="gv-cat-name">{{ $info['label'] }}</span>
+                </a>
+                @php $i++; @endphp
             @endforeach
         </div>
     </div>
